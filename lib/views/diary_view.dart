@@ -1,3 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:intl/intl.dart';
@@ -6,10 +8,9 @@ import '../model/diary_entry.dart';
 import 'components/diary_entry_widget.dart';
 
 class DiaryView extends StatelessWidget {
-  final DiaryController diaryController;
+  DiaryView({super.key});
 
-  const DiaryView({Key? key, required this.diaryController}) : super(key: key);
-
+  final DiaryController diaryController = DiaryController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -22,64 +23,70 @@ class DiaryView extends StatelessWidget {
               Navigator.pushNamed(context, '/addEntry');
             },
           ),
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () async {
+              await FirebaseAuth.instance.signOut();
+            },
+          ),
         ],
       ),
-      body: ValueListenableBuilder(
-        valueListenable: diaryController.diaryBox.listenable(),
-        builder: (context, Box box, widget) {
-          if (box.isEmpty) {
-            return const Center(
-              child: Text('No entries found'),
-            );
-          } else {
-            final entries = box.values.cast<DiaryEntry>().toList();
-            entries.sort((a, b) => b.date
-                .compareTo(a.date)); // Sort entries by date in descending order
-            return Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: ValueListenableBuilder(
-                valueListenable: diaryController.diaryBox.listenable(),
-                builder: (context, Box box, widget) {
-                  if (box.isEmpty) {
-                    return const Center(
-                      child: Text('No entries found'),
-                    );
-                  } else {
-                    final entries = box.values.cast<DiaryEntry>().toList();
-                    entries.sort((a, b) => b.date.compareTo(a.date));
+      // body: ValueListenableBuilder(
+      //   valueListenable: diaryController.diaryBox.listenable(),
+      //   builder: (context, Box box, widget) {
+      //     if (box.isEmpty) {
+      //       return const Center(
+      //         child: Text('No entries found'),
+      //       );
+      //     } else {
+      //       final entries = box.values.cast<DiaryEntry>().toList();
+      //       entries.sort((a, b) => b.date
+      //           .compareTo(a.date)); // Sort entries by date in descending order
+      //       return Padding(
+      //         padding: const EdgeInsets.all(16.0),
+      //         child: ValueListenableBuilder(
+      //           valueListenable: diaryController.diaryBox.listenable(),
+      //           builder: (context, Box box, widget) {
+      //             if (box.isEmpty) {
+      //               return const Center(
+      //                 child: Text('No entries found'),
+      //               );
+      //             } else {
+      //               final entries = box.values.cast<DiaryEntry>().toList();
+      //               entries.sort((a, b) => b.date.compareTo(a.date));
 
-                    List<Widget> widgets = [];
-                    DateTime? lastDate;
-                    for (int i = 0; i < entries.length; i++) {
-                      final entry = entries[i];
-                      if (lastDate == null ||
-                          entry.date.month != lastDate.month ||
-                          entry.date.year != lastDate.year) {
-                        final headerText =
-                            DateFormat('MMMM yyyy').format(entry.date);
-                        widgets.add(DateHeader(text: headerText));
-                      }
-                      widgets.add(
-                        DiaryEntryWidget(
-                          entry: entry,
-                          onDelete: () {
-                            diaryController.deleteEntryByEntry(entry);
-                          },
-                        ),
-                      );
-                      lastDate = entry.date;
-                    }
+      //               List<Widget> widgets = [];
+      //               DateTime? lastDate;
+      //               for (int i = 0; i < entries.length; i++) {
+      //                 final entry = entries[i];
+      //                 if (lastDate == null ||
+      //                     entry.date.month != lastDate.month ||
+      //                     entry.date.year != lastDate.year) {
+      //                   final headerText =
+      //                       DateFormat('MMMM yyyy').format(entry.date);
+      //                   widgets.add(DateHeader(text: headerText));
+      //                 }
+      //                 widgets.add(
+      //                   DiaryEntryWidget(
+      //                     entry: entry,
+      //                     onDelete: () {
+      //                       diaryController.deleteEntryByEntry(entry);
+      //                     },
+      //                   ),
+      //                 );
+      //                 lastDate = entry.date;
+      //               }
 
-                    return ListView(
-                      children: widgets,
-                    );
-                  }
-                },
-              ),
-            );
-          }
-        },
-      ),
+      //               return ListView(
+      //                 children: widgets,
+      //               );
+      //             }
+      //           },
+      //         ),
+      //       );
+      //     }
+      //   },
+      // ),
     );
   }
 }

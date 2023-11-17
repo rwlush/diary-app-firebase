@@ -1,16 +1,18 @@
+import 'package:dear_diary/firebase_options.dart';
 import 'package:dear_diary/model/diary_entry.dart';
 import 'package:flutter/material.dart';
 import 'controller/diary_controller.dart';
 import 'views/add_entry_view.dart';
 import 'views/diary_view.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 Future<void> main() async {
-  // Ensure Flutter is initialized.
   WidgetsFlutterBinding.ensureInitialized();
-  // Initialize Hive for Flutter.
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   await Hive.initFlutter();
-  // Register the adapter for `CarModel`.
   Hive.registerAdapter((DiaryEntryAdapter()));
   final diaryBox = await Hive.openBox('diaryBox');
   final DiaryController diaryController = DiaryController(diaryBox);

@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class DiaryEntry {
   final String? id;
-  final Timestamp date;
+  final DateTime date;
   final String description;
   final int rating;
 
@@ -15,7 +15,7 @@ class DiaryEntry {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'date': date,
+      'date': Timestamp.fromDate(date),
       'description': description,
       'rating': rating,
     };
@@ -25,7 +25,7 @@ class DiaryEntry {
     Map<String, dynamic> map = doc.data() as Map<String, dynamic>;
     return DiaryEntry(
       id: doc.id,
-      date: map['date'] as Timestamp,
+      date: DateTime.parse(map['date'].toString()),
       description: map['description'],
       rating: map['rating'],
     );

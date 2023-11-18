@@ -1,33 +1,76 @@
-import 'package:hive/hive.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../model/diary_entry.dart';
 
 class DiaryController {
-  DiaryController();
+  final user = FirebaseAuth.instance.currentUser;
 
-  Future<void> addEntry(DiaryEntry entry) async {
-    if (await entryExists(entry.date)) {
-      throw Exception('Entry already exists for this date');
-    }
-    //await diaryBox.put(entry.date.toString(), entry);
-  }
+  final CollectionReference diaryEntryCollection;
 
-  Future<void> updateEntry(DateTime date, DiaryEntry updatedEntry) async {
-    if (!await entryExists(date)) {
-      throw Exception('No entry found for this date');
-    }
-    //await diaryBox.put(date.toString(), updatedEntry);
-  }
+  DiaryController()
+      : diaryEntryCollection = FirebaseFirestore.instance
+            .collection('entries')
+            .doc(FirebaseAuth.instance.currentUser!.uid)
+            .collection('userEntries');
 
-  Future<void> removeEntry(DateTime date) async {
-    if (!await entryExists(date)) {
-      throw Exception('No entry found for this date');
+  Future<DocumentReference<Object?>> addEntry(DiaryEntry entry) async {
+    try {
+      if (await entryExists(entry.date)) {
+        throw Exception('An entry for this date already exists');
+      }
+      return await diaryEntryCollection.add(entry.toMap());
+    } catch (e) {
+      throw Exception(e);
     }
-    //await diaryBox.delete(date.toString());
   }
 
   Future<List<DiaryEntry>> listEntries() async {
-    return [];
-    //return diaryBox.values.cast<DiaryEntry>().toList();
+    try {
+      QuerySnapshot snapshot = await diaryEntryCollection.get();
+      return snapshot.docs.map((doc) => DiaryEntry.fromMap(doc)).toList();
+    } catch (e) {
+      throw Exception(e);
+    }
+  }
+
+  Future<void> updateEntry(DiaryEntry updatedEntry) async {
+    try {
+      if (!await entryExists(updatedEntry.date)) {
+        throw Exception('No entry found for this date');
+      }
+      return await diaryEntryCollection
+          .doc(updatedEntry.id)
+          .update(updatedEntry.toMap());
+    } catch (e) {
+      throw Exception(e);
+    }
+  }
+
+  Future<void> removeEntry(DiaryEntry entry) async {
+    try {
+      if (!await entryExists(entry.date)) {
+        throw Exception('No entry found for this date');
+      }
+      return await diaryEntryCollection.doc(entry.id).delete();
+    } catch (e) {
+      throw Exception(e);
+    }
+  }
+
+  Future<bool> entryExists(DateTime date) async {
+    try {
+      DateTime start = DateTime(date.year, date.month, date.day, 0, 0, 0);
+      DateTime end = DateTime(date.year, date.month, date.day, 23, 59, 59);
+
+      QuerySnapshot matchingEntries = await diaryEntryCollection
+          .where('date', isGreaterThanOrEqualTo: start)
+          .where('date', isLessThanOrEqualTo: end)
+          .get();
+
+      return matchingEntries.docs.isNotEmpty;
+    } catch (e) {
+      throw Exception(e);
+    }
   }
 
   Future<List<DiaryEntry>> searchEntries(String keyword) async {
@@ -46,32 +89,10 @@ class DiaryController {
     //     .toList();
   }
 
-  Future<bool> entryExists(DateTime date) async {
-    return true;
-    // return diaryBox.containsKey(date.toString());
-  }
+// void main() async {
 
-  void deleteEntry(int index) {
-    //diaryBox.deleteAt(index);
-  }
+//   var diaryController = DiaryController();
 
-  Future<void> deleteEntryByEntry(DiaryEntry entry) async {
-    // final key = diaryBox.keys
-    //     .firstWhere((k) => diaryBox.get(k) == entry, orElse: () => null);
-    // if (key != null) {
-    //   await diaryBox.delete(key);
-    // } else {
-    //   print('Entry not found');
-    // }
-  }
-}
-
-void main() async {
-  Hive.init('path_to_hive_box'); // Initialize Hive
-  Hive.registerAdapter(DiaryEntryAdapter()); // Register your custom TypeAdapter
-
-  var diaryBox = await Hive.openBox<DiaryEntry>('diaryBox');
-  var diaryController = DiaryController();
-
-  // Now you can use diaryController to manage diary entries
+//   // Now you can use diaryController to manage diary entries
+// }
 }

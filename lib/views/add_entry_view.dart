@@ -5,8 +5,7 @@ import '../model/diary_entry.dart';
 class AddEntryView extends StatefulWidget {
   final DiaryController diaryController;
 
-  const AddEntryView({Key? key, required this.diaryController})
-      : super(key: key);
+  const AddEntryView({super.key, required this.diaryController});
 
   @override
   State<AddEntryView> createState() => _AddEntryViewState();
@@ -43,9 +42,9 @@ class _AddEntryViewState extends State<AddEntryView> {
     }
 
     final DiaryEntry newEntry = DiaryEntry(
-      _selectedDate,
-      description,
-      _rating,
+      date: _selectedDate,
+      description: description,
+      rating: _rating,
     );
 
     widget.diaryController.addEntry(newEntry).then((_) {

@@ -4,16 +4,25 @@ import '../model/diary_entry.dart';
 
 class AddEntryView extends StatefulWidget {
   final DiaryController diaryController;
+  final DiaryEntry? entry;
 
-  const AddEntryView({super.key, required this.diaryController});
+  const AddEntryView({super.key, required this.diaryController, this.entry});
 
   @override
   State<AddEntryView> createState() => _AddEntryViewState();
 }
 
 class _AddEntryViewState extends State<AddEntryView> {
-  final TextEditingController _descriptionController = TextEditingController();
-  int _rating = 3; // Default rating
+  late TextEditingController _descriptionController;
+  late int _rating;
+
+  @override
+  void initState() {
+    super.initState();
+    _rating = widget.entry?.rating ?? 3;
+    _descriptionController =
+        TextEditingController(text: widget.entry?.description);
+  }
 
   DateTime _selectedDate =
       DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
@@ -55,12 +64,37 @@ class _AddEntryViewState extends State<AddEntryView> {
       );
     });
   }
+  void _updateEntry() {
+    final String description = _descriptionController.text;
+    if (description.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Description cannot be empty')),
+      );
+      return;
+    }
+
+    final DiaryEntry newEntry = DiaryEntry(
+      date: _selectedDate,
+      description: description,
+      rating: _rating,
+    );
+
+    widget.diaryController.addEntry(newEntry).then((_) {
+      Navigator.pop(context);
+    }).catchError((e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Diary Entry'),
+        title: widget.entry == null
+            ? Text('Add Diary Entry')
+            : Text('Edit Diary Entry'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -96,7 +130,7 @@ class _AddEntryViewState extends State<AddEntryView> {
               ],
             ),
             const SizedBox(height: 20),
-            Row(
+            widget.entry == null ? Row(
               children: [
                 Text(
                   "Date: ${_selectedDate.toLocal().toString().split(' ')[0]}",
@@ -106,11 +140,11 @@ class _AddEntryViewState extends State<AddEntryView> {
                   onPressed: () => _selectDate(context),
                 ),
               ],
-            ),
+            ) : Container(),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _saveEntry,
-              child: const Text('Save Entry'),
+              child:  widget.entry == null ? Text('Save Entry') : Text('Update Entry'),
             ),
           ],
         ),

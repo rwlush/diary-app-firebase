@@ -1,3 +1,5 @@
+import 'package:dear_diary/controller/diary_controller.dart';
+import 'package:dear_diary/views/add_entry_view.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -6,15 +8,20 @@ import '../../model/diary_entry.dart';
 class DiaryEntryWidget extends StatelessWidget {
   final DiaryEntry entry;
   final Function onDelete;
+  final DiaryController diaryController = DiaryController();
 
   DiaryEntryWidget({required this.entry, required this.onDelete});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onLongPress: () {
-        print('Long Press Registered');
-        // edit the tile
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (BuildContext context) =>
+                  AddEntryView(entry: entry, diaryController: diaryController)),
+        );
       },
       child: Container(
         padding: EdgeInsets.all(10.0),

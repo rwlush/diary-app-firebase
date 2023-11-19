@@ -64,6 +64,7 @@ class _AddEntryViewState extends State<AddEntryView> {
       );
     });
   }
+
   void _updateEntry() {
     final String description = _descriptionController.text;
     if (description.isEmpty) {
@@ -73,13 +74,14 @@ class _AddEntryViewState extends State<AddEntryView> {
       return;
     }
 
-    final DiaryEntry newEntry = DiaryEntry(
-      date: _selectedDate,
+    final DiaryEntry updatedEntry = DiaryEntry(
+      id: widget.entry!.id,
+      date: widget.entry!.date,
       description: description,
       rating: _rating,
     );
 
-    widget.diaryController.addEntry(newEntry).then((_) {
+    widget.diaryController.updateEntry(updatedEntry).then((_) {
       Navigator.pop(context);
     }).catchError((e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -130,21 +132,25 @@ class _AddEntryViewState extends State<AddEntryView> {
               ],
             ),
             const SizedBox(height: 20),
-            widget.entry == null ? Row(
-              children: [
-                Text(
-                  "Date: ${_selectedDate.toLocal().toString().split(' ')[0]}",
-                ),
-                IconButton(
-                  icon: const Icon(Icons.calendar_today),
-                  onPressed: () => _selectDate(context),
-                ),
-              ],
-            ) : Container(),
+            widget.entry == null
+                ? Row(
+                    children: [
+                      Text(
+                        "Date: ${_selectedDate.toLocal().toString().split(' ')[0]}",
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.calendar_today),
+                        onPressed: () => _selectDate(context),
+                      ),
+                    ],
+                  )
+                : Container(),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: _saveEntry,
-              child:  widget.entry == null ? Text('Save Entry') : Text('Update Entry'),
+              onPressed: widget.entry == null ? _saveEntry : _updateEntry,
+              child: widget.entry == null
+                  ? Text('Save Entry')
+                  : Text('Update Entry'),
             ),
           ],
         ),

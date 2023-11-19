@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dear_diary/views/add_entry_view.dart';
+import 'package:dear_diary/views/statistics_view.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -55,6 +56,17 @@ class _DiaryViewState extends State<DiaryView> {
                 );
               },
             ),
+            IconButton(
+                icon: const Icon(Icons.tag),
+                onPressed: () async {
+                  var entriesList = await diaryController.listEntries();
+                  // ignore: use_build_context_synchronously
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (BuildContext context) => StatisticsView(entriesList: entriesList,)),
+                  );
+                }),
             IconButton(
               icon: const Icon(Icons.logout),
               onPressed: () async {

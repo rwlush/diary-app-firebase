@@ -70,26 +70,114 @@ class DiaryController {
     }
   }
 
-  Future<List<DiaryEntry>> searchEntries(String keyword) async {
-    return [];
-    // return diaryBox.values
-    //     .cast<DiaryEntry>()
-    //     .where((entry) => entry.description.contains(keyword))
-    //     .toList();
+  Map<String, int> countTotalEntries(List<DiaryEntry> entries) {
+    Map<String, int> totalEntriesCount = {};
+
+    for (var entry in entries) {
+      int month = entry.date.month;
+      int year = entry.date.year;
+      String monthYearKey = '$month-$year';
+
+      if (!totalEntriesCount.containsKey(monthYearKey)) {
+        totalEntriesCount[monthYearKey] = 1;
+      } else {
+        totalEntriesCount[monthYearKey] = totalEntriesCount[monthYearKey]! + 1;
+      }
+    }
+
+    List<MapEntry<String, int>> sortedEntries =
+        totalEntriesCount.entries.toList()
+          ..sort((a, b) {
+            var aDate = DateTime.parse('20${a.key.replaceAll('-', '01-')}');
+            var bDate = DateTime.parse('20${b.key.replaceAll('-', '01-')}');
+            return bDate.compareTo(aDate);
+          });
+
+    return Map.fromEntries(sortedEntries);
   }
 
-  Future<List<DiaryEntry>> filterEntries(int rating) async {
-    return [];
-    // return diaryBox.values
-    //     .cast<DiaryEntry>()
-    //     .where((entry) => entry.rating == rating)
-    //     .toList();
+  Map<String, double> findHighestRatings(List<DiaryEntry> entries) {
+    Map<String, double> highestRatings = {};
+
+    for (var entry in entries) {
+      int month = entry.date.month;
+      int year = entry.date.year;
+      String monthYearKey = '$month-$year';
+
+      if (!highestRatings.containsKey(monthYearKey) ||
+          entry.rating > highestRatings[monthYearKey]!) {
+        highestRatings[monthYearKey] = entry.rating as double;
+      }
+    }
+
+    List<MapEntry<String, double>> sortedEntries =
+        highestRatings.entries.toList()
+          ..sort((a, b) {
+            var aDate = DateTime.parse('20${a.key.replaceAll('-', '01-')}');
+            var bDate = DateTime.parse('20${b.key.replaceAll('-', '01-')}');
+            return bDate.compareTo(aDate);
+          });
+
+    return Map.fromEntries(sortedEntries);
   }
 
-// void main() async {
+  Map<String, double> findLowestRatings(List<DiaryEntry> entries) {
+    Map<String, double> lowestRatings = {};
 
-//   var diaryController = DiaryController();
+    for (var entry in entries) {
+      int month = entry.date.month;
+      int year = entry.date.year;
+      String monthYearKey = '$month-$year';
 
-//   // Now you can use diaryController to manage diary entries
-// }
+      if (!lowestRatings.containsKey(monthYearKey) ||
+          entry.rating < lowestRatings[monthYearKey]!) {
+        lowestRatings[monthYearKey] = entry.rating as double;
+      }
+    }
+
+    List<MapEntry<String, double>> sortedEntries =
+        lowestRatings.entries.toList()
+          ..sort((a, b) {
+            var aDate = DateTime.parse('20${a.key.replaceAll('-', '01-')}');
+            var bDate = DateTime.parse('20${b.key.replaceAll('-', '01-')}');
+            return bDate.compareTo(aDate);
+          });
+
+    return Map.fromEntries(sortedEntries);
+  }
+
+  Map<String, double> calculateAverageRatings(List<DiaryEntry> entries) {
+    Map<String, List<double>> ratingsByMonthYear = {};
+
+    for (var entry in entries) {
+      int month = entry.date.month;
+      int year = entry.date.year;
+      String monthYearKey = '$month-$year';
+
+      if (!ratingsByMonthYear.containsKey(monthYearKey)) {
+        ratingsByMonthYear[monthYearKey] = [];
+      }
+
+      ratingsByMonthYear[monthYearKey]!.add(entry.rating as double);
+    }
+
+    Map<String, double> averageRatings = {};
+
+    ratingsByMonthYear.forEach((monthYear, ratings) {
+      double average = ratings.isNotEmpty
+          ? ratings.reduce((a, b) => a + b) / ratings.length
+          : 0;
+      averageRatings[monthYear] = average;
+    });
+
+    List<MapEntry<String, double>> sortedEntries =
+        averageRatings.entries.toList()
+          ..sort((a, b) {
+            var aDate = DateTime.parse('20${a.key.replaceAll('-', '01-')}');
+            var bDate = DateTime.parse('20${b.key.replaceAll('-', '01-')}');
+            return bDate.compareTo(aDate);
+          });
+
+    return Map.fromEntries(sortedEntries);
+  }
 }

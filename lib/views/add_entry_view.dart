@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../controller/diary_controller.dart';
 import '../model/diary_entry.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 class AddEntryView extends StatefulWidget {
   final DiaryController diaryController;
@@ -13,6 +15,8 @@ class AddEntryView extends StatefulWidget {
 }
 
 class _AddEntryViewState extends State<AddEntryView> {
+  final ImagePicker _picker = ImagePicker();
+  XFile? _image;
   late TextEditingController _descriptionController;
   late int _rating;
   late DateTime _selectedDate;
@@ -25,6 +29,20 @@ class _AddEntryViewState extends State<AddEntryView> {
         DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
     _descriptionController =
         TextEditingController(text: widget.entry?.description);
+  }
+
+  Future<void> _pickImageFromGallery() async {
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    setState(() {
+      _image = image;
+    });
+  }
+
+  Future<void> _pickImageFromCamera() async {
+    final XFile? image = await _picker.pickImage(source: ImageSource.camera);
+    setState(() {
+      _image = image;
+    });
   }
 
   Future<void> _selectDate(BuildContext context) async {

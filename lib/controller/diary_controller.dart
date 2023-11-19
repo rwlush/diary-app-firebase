@@ -106,7 +106,7 @@ class DiaryController {
 
       if (!highestRatings.containsKey(monthYearKey) ||
           entry.rating > highestRatings[monthYearKey]!) {
-        highestRatings[monthYearKey] = entry.rating as double;
+        highestRatings[monthYearKey] = entry.rating.toDouble();
       }
     }
 
@@ -131,7 +131,7 @@ class DiaryController {
 
       if (!lowestRatings.containsKey(monthYearKey) ||
           entry.rating < lowestRatings[monthYearKey]!) {
-        lowestRatings[monthYearKey] = entry.rating as double;
+        lowestRatings[monthYearKey] = entry.rating.toDouble();
       }
     }
 
@@ -158,7 +158,7 @@ class DiaryController {
         ratingsByMonthYear[monthYearKey] = [];
       }
 
-      ratingsByMonthYear[monthYearKey]!.add(entry.rating as double);
+      ratingsByMonthYear[monthYearKey]!.add(entry.rating.toDouble());
     }
 
     Map<String, double> averageRatings = {};

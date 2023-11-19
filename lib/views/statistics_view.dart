@@ -20,13 +20,13 @@ class _StatisticsViewState extends State<StatisticsView> {
 
   @override
   Widget build(BuildContext context) {
-    Map<String, double> averageRatings =
+    Map<String, num> averageRatings =
         diaryController.calculateAverageRatings(widget.entriesList);
-    Map<String, double> highestRatings =
+    Map<String, num> highestRatings =
         diaryController.findHighestRatings(widget.entriesList);
-    Map<String, double> lowestRatings =
+    Map<String, num> lowestRatings =
         diaryController.findLowestRatings(widget.entriesList);
-    Map<String, int> totalRatings =
+    Map<String, num> totalRatings =
         diaryController.countTotalEntries(widget.entriesList);
     return Scaffold(
       appBar: AppBar(

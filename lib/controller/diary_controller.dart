@@ -35,9 +35,6 @@ class DiaryController {
 
   Future<void> updateEntry(DiaryEntry updatedEntry) async {
     try {
-      if (!await entryExists(updatedEntry.date)) {
-        throw Exception('No entry found for this date');
-      }
       return await diaryEntryCollection
           .doc(updatedEntry.id)
           .update(updatedEntry.toMap());

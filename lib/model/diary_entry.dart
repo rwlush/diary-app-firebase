@@ -14,7 +14,6 @@ class DiaryEntry {
 
   Map<String, dynamic> toMap() {
     return {
-      'id': id,
       'date': Timestamp.fromDate(date),
       'description': description,
       'rating': rating,

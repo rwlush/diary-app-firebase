@@ -15,17 +15,17 @@ class AddEntryView extends StatefulWidget {
 class _AddEntryViewState extends State<AddEntryView> {
   late TextEditingController _descriptionController;
   late int _rating;
+  late DateTime _selectedDate;
 
   @override
   void initState() {
     super.initState();
     _rating = widget.entry?.rating ?? 3;
+    _selectedDate = widget.entry?.date ??
+        DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
     _descriptionController =
         TextEditingController(text: widget.entry?.description);
   }
-
-  DateTime _selectedDate =
-      DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -76,7 +76,7 @@ class _AddEntryViewState extends State<AddEntryView> {
 
     final DiaryEntry updatedEntry = DiaryEntry(
       id: widget.entry!.id,
-      date: widget.entry!.date,
+      date: _selectedDate,
       description: description,
       rating: _rating,
     );
@@ -132,19 +132,17 @@ class _AddEntryViewState extends State<AddEntryView> {
               ],
             ),
             const SizedBox(height: 20),
-            widget.entry == null
-                ? Row(
-                    children: [
-                      Text(
-                        "Date: ${_selectedDate.toLocal().toString().split(' ')[0]}",
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.calendar_today),
-                        onPressed: () => _selectDate(context),
-                      ),
-                    ],
-                  )
-                : Container(),
+            Row(
+              children: [
+                Text(
+                  "Date: ${_selectedDate.toLocal().toString().split(' ')[0]}",
+                ),
+                IconButton(
+                  icon: const Icon(Icons.calendar_today),
+                  onPressed: () => _selectDate(context),
+                ),
+              ],
+            ),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: widget.entry == null ? _saveEntry : _updateEntry,

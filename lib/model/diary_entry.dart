@@ -25,7 +25,7 @@ class DiaryEntry {
     Map<String, dynamic> map = doc.data() as Map<String, dynamic>;
     return DiaryEntry(
       id: doc.id,
-      date: DateTime.parse(map['date'].toString()),
+      date: DateTime.parse(map['date'].toDate().toString()),
       description: map['description'],
       rating: map['rating'],
     );

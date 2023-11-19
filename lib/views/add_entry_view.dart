@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../controller/diary_controller.dart';
 import '../model/diary_entry.dart';
@@ -158,6 +159,44 @@ class _AddEntryViewState extends State<AddEntryView> {
                 IconButton(
                   icon: const Icon(Icons.calendar_today),
                   onPressed: () => _selectDate(context),
+                ),
+              ],
+            ),
+            Column(
+              children: [
+                ElevatedButton(
+                  onPressed: _pickImageFromGallery,
+                  child: Text('Pick Image from Gallery'),
+                ),
+                ElevatedButton(
+                  onPressed: _pickImageFromCamera,
+                  child: Text('Capture Image from Camera'),
+                ),
+                SizedBox(height: 10,),
+                Column(
+                  children: [
+                    _image != null
+                        ? Text(
+                            "Current Image",
+                            style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold),
+                          )
+                        : Container(),
+                    _image != null
+                        ? kIsWeb
+                            ? Image.network(
+                                _image!.path,
+                                width: 300,
+                                height: 300,
+                              )
+                            : Image.file(
+                                width: 200,
+                                height: 200,
+                                File(_image!.path),
+                              )
+                        : Container(),
+                  ],
                 ),
               ],
             ),

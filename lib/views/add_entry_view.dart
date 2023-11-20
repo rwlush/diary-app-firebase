@@ -21,10 +21,12 @@ class _AddEntryViewState extends State<AddEntryView> {
   late TextEditingController _descriptionController;
   late int _rating;
   late DateTime _selectedDate;
+  late String? existingImagePath;
 
   @override
   void initState() {
     super.initState();
+    existingImagePath = widget.entry?.imagePath;
     _rating = widget.entry?.rating ?? 3;
     _selectedDate = widget.entry?.date ??
         DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
@@ -94,8 +96,9 @@ class _AddEntryViewState extends State<AddEntryView> {
     });
   }
 
-  void _updateEntry() {
+  void _updateEntry() async {
     final String description = _descriptionController.text;
+    String? updatedImagePath;
     if (description.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Description cannot be empty')),
@@ -103,11 +106,25 @@ class _AddEntryViewState extends State<AddEntryView> {
       return;
     }
 
+    if (_image != null) {
+      if (existingImagePath != null) {
+        widget.diaryController
+            .removeImageFromFirebase(existingImagePath as String);
+      }
+      try {
+        updatedImagePath =
+            await widget.diaryController.uploadImageToFirebase(_image);
+      } catch (e) {
+        throw Exception(e);
+      }
+    }
+
     final DiaryEntry updatedEntry = DiaryEntry(
       id: widget.entry!.id,
       date: _selectedDate,
       description: description,
       rating: _rating,
+      imagePath: updatedImagePath,
     );
 
     widget.diaryController.updateEntry(updatedEntry).then((_) {
@@ -188,26 +205,31 @@ class _AddEntryViewState extends State<AddEntryView> {
             ),
             Column(
               children: [
-                SizedBox(height: 15,),
+                SizedBox(
+                  height: 15,
+                ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        widget.entry?.imagePath != null
+                        existingImagePath != null
                             ? Text(
-                                "Current Image",
+                                "Stored Image",
                                 style: TextStyle(
                                     fontSize: 12, fontWeight: FontWeight.bold),
                               )
                             : Container(),
-                        widget.entry?.imagePath != null
+                        SizedBox(
+                          height: 6,
+                        ),
+                        existingImagePath != null
                             ? Image(
                                 height: 175,
                                 width: 175,
-                                image: NetworkImage(
-                                    widget.entry?.imagePath as String))
+                                image:
+                                    NetworkImage(existingImagePath as String))
                             : Container(),
                       ],
                     ),
@@ -216,11 +238,14 @@ class _AddEntryViewState extends State<AddEntryView> {
                       children: [
                         _image != null
                             ? Text(
-                                "New Image",
+                                "Selected Image",
                                 style: TextStyle(
                                     fontSize: 12, fontWeight: FontWeight.bold),
                               )
                             : Container(),
+                        SizedBox(
+                          height: 6,
+                        ),
                         _image != null
                             ? kIsWeb
                                 ? Image.network(
@@ -241,6 +266,26 @@ class _AddEntryViewState extends State<AddEntryView> {
               ],
             ),
             const SizedBox(height: 20),
+            existingImagePath != null
+                ? ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        widget.diaryController.removeImageFromFirebase(
+                            existingImagePath as String);
+                        existingImagePath = null;
+                      });
+                    },
+                    child: Text('Delete stored image'))
+                : Container(),
+            _image != null
+                ? ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        _image = null;
+                      });
+                    },
+                    child: Text('Clear selected image'))
+                : Container(),
             ElevatedButton(
               onPressed: widget.entry == null ? _saveEntry : _updateEntry,
               child: widget.entry == null

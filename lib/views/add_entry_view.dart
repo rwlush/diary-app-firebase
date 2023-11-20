@@ -19,6 +19,7 @@ class _AddEntryViewState extends State<AddEntryView> {
   final ImagePicker _picker = ImagePicker();
   XFile? _image;
   late TextEditingController _descriptionController;
+  late TextEditingController _locationController;
   late int _rating;
   late DateTime _selectedDate;
   late String? existingImagePath;
@@ -32,6 +33,7 @@ class _AddEntryViewState extends State<AddEntryView> {
         DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
     _descriptionController =
         TextEditingController(text: widget.entry?.description);
+    _locationController = TextEditingController(text: widget.entry?.location);
   }
 
   Future<void> _pickImageFromGallery() async {
@@ -64,6 +66,7 @@ class _AddEntryViewState extends State<AddEntryView> {
 
   void _saveEntry() async {
     final String description = _descriptionController.text;
+    String? location = _locationController.text;
     String? imagePath;
     if (description.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -84,6 +87,7 @@ class _AddEntryViewState extends State<AddEntryView> {
       date: _selectedDate,
       description: description,
       rating: _rating,
+      location: location,
       imagePath: imagePath,
     );
 
@@ -98,7 +102,8 @@ class _AddEntryViewState extends State<AddEntryView> {
 
   void _updateEntry() async {
     final String description = _descriptionController.text;
-    String? updatedImagePath;
+    String? location = _locationController.text;
+    String? updatedImagePath = widget.entry?.imagePath;
     if (description.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Description cannot be empty')),
@@ -124,6 +129,7 @@ class _AddEntryViewState extends State<AddEntryView> {
       date: _selectedDate,
       description: description,
       rating: _rating,
+      location: location,
       imagePath: updatedImagePath,
     );
 
@@ -158,141 +164,159 @@ class _AddEntryViewState extends State<AddEntryView> {
             ? Text('Add Diary Entry')
             : Text('Edit Diary Entry'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            TextField(
-              controller: _descriptionController,
-              maxLength: 140,
-              maxLines: 4, // This allows for multiple lines
-              keyboardType: TextInputType
-                  .multiline, // This sets up the keyboard for multiline input
-              decoration: const InputDecoration(
-                labelText: 'Description',
-                helperText: 'Describe your day in 140 characters',
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              TextField(
+                controller: _descriptionController,
+                maxLength: 140,
+                maxLines: 4,
+                keyboardType: TextInputType.multiline,
+                decoration: const InputDecoration(
+                  labelText: 'Description',
+                  helperText: 'Describe your day in 140 characters',
+                ),
               ),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                const Text('Rate your day:'),
-                Slider(
-                  value: _rating.toDouble(),
-                  min: 1,
-                  max: 5,
-                  divisions: 4,
-                  onChanged: (double value) {
-                    setState(() {
-                      _rating = value.toInt();
-                    });
-                  },
+              TextField(
+                controller: _locationController,
+                maxLength: 10,
+                maxLines: 1,
+                keyboardType: TextInputType.text,
+                decoration: const InputDecoration(
+                  labelText: 'Entry Location',
                 ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                Text(
-                  "Date: ${_selectedDate.toLocal().toString().split(' ')[0]}",
-                ),
-                IconButton(
-                  icon: const Icon(Icons.calendar_today),
-                  onPressed: () => _selectDate(context),
-                ),
-              ],
-            ),
-            Column(
-              children: [
-                SizedBox(
-                  height: 15,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        existingImagePath != null
-                            ? Text(
-                                "Stored Image",
-                                style: TextStyle(
-                                    fontSize: 12, fontWeight: FontWeight.bold),
-                              )
-                            : Container(),
-                        SizedBox(
-                          height: 6,
-                        ),
-                        existingImagePath != null
-                            ? Image(
-                                height: 175,
-                                width: 175,
-                                image:
-                                    NetworkImage(existingImagePath as String))
-                            : Container(),
-                      ],
-                    ),
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _image != null
-                            ? Text(
-                                "Selected Image",
-                                style: TextStyle(
-                                    fontSize: 12, fontWeight: FontWeight.bold),
-                              )
-                            : Container(),
-                        SizedBox(
-                          height: 6,
-                        ),
-                        _image != null
-                            ? kIsWeb
-                                ? Image.network(
-                                    _image!.path,
-                                    width: 175,
-                                    height: 175,
-                                  )
-                                : Image.file(
-                                    width: 175,
-                                    height: 175,
-                                    File(_image!.path),
-                                  )
-                            : Container(),
-                      ],
-                    ),
-                  ],
-                )
-              ],
-            ),
-            const SizedBox(height: 20),
-            existingImagePath != null
-                ? ElevatedButton(
-                    onPressed: () {
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  const Text('Rate your day:'),
+                  Slider(
+                    value: _rating.toDouble(),
+                    min: 1,
+                    max: 5,
+                    divisions: 4,
+                    onChanged: (double value) {
                       setState(() {
-                        widget.diaryController.removeImageFromFirebase(
-                            existingImagePath as String);
-                        existingImagePath = null;
+                        _rating = value.toInt();
                       });
                     },
-                    child: Text('Delete stored image'))
-                : Container(),
-            _image != null
-                ? ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        _image = null;
-                      });
-                    },
-                    child: Text('Clear selected image'))
-                : Container(),
-            ElevatedButton(
-              onPressed: widget.entry == null ? _saveEntry : _updateEntry,
-              child: widget.entry == null
-                  ? Text('Save Entry')
-                  : Text('Update Entry'),
-            ),
-          ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Text(
+                    "Date: ${_selectedDate.toLocal().toString().split(' ')[0]}",
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.calendar_today),
+                    onPressed: () => _selectDate(context),
+                  ),
+                ],
+              ),
+              Column(
+                children: [
+                  SizedBox(
+                    height: 15,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          existingImagePath != null
+                              ? Text(
+                                  "Stored Image",
+                                  style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold),
+                                )
+                              : Container(),
+                          SizedBox(
+                            height: 6,
+                          ),
+                          existingImagePath != null
+                              ? Image(
+                                  height: 175,
+                                  width: 175,
+                                  image:
+                                      NetworkImage(existingImagePath as String))
+                              : Container(),
+                        ],
+                      ),
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          _image != null
+                              ? Text(
+                                  "Selected Image",
+                                  style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold),
+                                )
+                              : Container(),
+                          SizedBox(
+                            height: 6,
+                          ),
+                          _image != null
+                              ? kIsWeb
+                                  ? Image.network(
+                                      _image!.path,
+                                      width: 175,
+                                      height: 175,
+                                    )
+                                  : Image.file(
+                                      width: 175,
+                                      height: 175,
+                                      File(_image!.path),
+                                    )
+                              : Container(),
+                        ],
+                      ),
+                    ],
+                  )
+                ],
+              ),
+              const SizedBox(height: 20),
+              existingImagePath != null
+                  ? ElevatedButton(
+                      style: ButtonStyle(
+                          backgroundColor:
+                              MaterialStateProperty.all(Colors.red)),
+                      onPressed: () {
+                        setState(() {
+                          widget.diaryController.removeImageFromFirebase(
+                              existingImagePath as String);
+                          existingImagePath = null;
+                        });
+                      },
+                      child: Text('Delete stored image'))
+                  : Container(),
+              _image != null
+                  ? ElevatedButton(
+                      style: ButtonStyle(
+                          backgroundColor:
+                              MaterialStateProperty.all(Colors.red)),
+                      onPressed: () {
+                        setState(() {
+                          _image = null;
+                        });
+                      },
+                      child: Text('Clear selected image'))
+                  : Container(),
+              ElevatedButton(
+                onPressed: widget.entry == null ? _saveEntry : _updateEntry,
+                child: widget.entry == null
+                    ? Text('Save Entry')
+                    : Text('Update Entry'),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -1,11 +1,13 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dear_diary/main.dart';
 import 'package:dear_diary/views/add_entry_view.dart';
 import 'package:dear_diary/views/statistics_view.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import '../controller/diary_controller.dart';
 import '../model/diary_entry.dart';
 import 'components/diary_entry_widget.dart';
@@ -57,6 +59,13 @@ class _DiaryViewState extends State<DiaryView> {
               },
             ),
             IconButton(
+              icon: Icon(Icons.nightlight),
+              onPressed: () {
+                Provider.of<ThemeProvider>(context, listen: false)
+                    .toggleTheme();
+              },
+            ),
+            IconButton(
                 icon: const Icon(Icons.tag),
                 onPressed: () async {
                   var entriesList = await diaryController.listEntries();
@@ -64,7 +73,9 @@ class _DiaryViewState extends State<DiaryView> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (BuildContext context) => StatisticsView(entriesList: entriesList,)),
+                        builder: (BuildContext context) => StatisticsView(
+                              entriesList: entriesList,
+                            )),
                   );
                 }),
             IconButton(

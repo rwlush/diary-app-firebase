@@ -5,11 +5,13 @@ class DiaryEntry {
   final DateTime date;
   final String description;
   final int rating;
+  final String? location;
   final String? imagePath;
 
   DiaryEntry(
       {this.id,
       this.imagePath,
+      this.location,
       required this.date,
       required this.description,
       required this.rating});
@@ -19,6 +21,7 @@ class DiaryEntry {
       'date': Timestamp.fromDate(date),
       'description': description,
       'rating': rating,
+      'location': location,
       'imagePath': imagePath
     };
   }
@@ -30,6 +33,7 @@ class DiaryEntry {
         date: DateTime.parse(map['date'].toDate().toString()),
         description: map['description'],
         rating: map['rating'],
+        location: map['location'],
         imagePath: map['imagePath']);
   }
 }

@@ -30,7 +30,7 @@ class _StatisticsViewState extends State<StatisticsView> {
         diaryController.countTotalEntries(widget.entriesList);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Average Ratings for Each Month'),
+        title: const Text('Statistics for Each Month'),
       ),
       body: widget.entriesList.isEmpty
           ? const Center(

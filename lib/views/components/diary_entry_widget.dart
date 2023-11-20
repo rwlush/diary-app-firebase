@@ -58,10 +58,29 @@ class DiaryEntryWidget extends StatelessWidget {
               ],
             ),
             SizedBox(height: 10),
-            Text(
-              entry.description,
-              style: TextStyle(fontSize: 14),
-            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  width: 150,
+                  child: Text(
+                    entry.description,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 14),
+                  ),
+                ),
+                Row(
+                  children: [
+                    entry.location != null && entry.location != ""
+                        ? Icon(Icons.map)
+                        : Container(),
+                    entry.location != null && entry.location != ""
+                        ? Text(entry.location as String)
+                        : Container(),
+                  ],
+                )
+              ],
+            )
           ],
         ),
       ),

@@ -1,10 +1,10 @@
 name: dear_diary
 description: Assignment 2 Part 1
-publish_to: 'none'
+publish_to: "none"
 version: 0.1.0
 
 environment:
-  sdk: '>=3.1.0 <4.0.0'
+  sdk: ">=3.1.0 <4.0.0"
 
 dependencies:
   flutter:
@@ -17,6 +17,7 @@ dependencies:
   firebase_core: ^2.22.0
   firebase_auth: ^4.14.0
   firebase_ui_auth: ^1.10.0
+  firebase_storage: ^11.2.8
   cloud_firestore: ^4.13.1
   image_picker: ^1.0.4
 

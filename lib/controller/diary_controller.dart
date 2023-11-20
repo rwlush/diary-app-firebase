@@ -1,5 +1,10 @@
+import 'dart:io';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
+import 'package:image_picker/image_picker.dart';
 import '../model/diary_entry.dart';
 
 class DiaryController {
@@ -67,6 +72,70 @@ class DiaryController {
       return matchingEntries.docs.isNotEmpty;
     } catch (e) {
       throw Exception(e);
+    }
+  }
+
+  Future<String?> uploadImageToFirebase(XFile? image) async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) return null;
+    final firebaseStorageRef = FirebaseStorage.instance
+        .ref()
+        .child('images/${currentUser.uid}/${image!.name}');
+    if (kIsWeb) {
+      try {
+        final uploadTask = await firebaseStorageRef.putData(
+            await image.readAsBytes(),
+            SettableMetadata(contentType: 'image/jpeg'));
+        if (uploadTask.state == TaskState.success) {
+          final downloadURL = await firebaseStorageRef.getDownloadURL();
+          print("Image stored successfully: $downloadURL");
+          return downloadURL;
+        }
+      } catch (e) {
+        print("Image upload failed: $e");
+      }
+    } else {
+      try {
+        final uploadTask = await firebaseStorageRef.putFile(File(image.path));
+        if (uploadTask.state == TaskState.success) {
+          final downloadURL = await firebaseStorageRef.getDownloadURL();
+          print("Image stored successfully: $downloadURL");
+          return downloadURL;
+        }
+      } catch (e) {
+        print("Image upload failed: $e");
+      }
+    }
+    return null;
+  }
+
+  Future<bool> removeImageFromFirebase(String imageUrl) async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) {
+      print("User not logged in");
+      return false;
+    }
+    final imageRef = FirebaseStorage.instance.refFromURL(imageUrl);
+    try {
+      await imageRef.delete();
+      print("Image deleted successfully");
+    } catch (e) {
+      print("Image deletion failed: $e");
+      return false;
+    }
+    final snapshot =
+        await diaryEntryCollection.where('imagePath', isEqualTo: imageUrl).get();
+    if (snapshot.docs.isNotEmpty) {
+      try {
+        final ref = snapshot.docs.first.reference;
+        await ref.update({'imagePath': null});
+        return true;
+      } catch (e) {
+        print("imagePath removal failed: $e");
+        return false;
+      }
+    } else {
+      return false;
     }
   }
 

@@ -60,8 +60,9 @@ class _AddEntryViewState extends State<AddEntryView> {
     }
   }
 
-  void _saveEntry() {
+  void _saveEntry() async {
     final String description = _descriptionController.text;
+    String? imagePath;
     if (description.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Description cannot be empty')),
@@ -69,10 +70,19 @@ class _AddEntryViewState extends State<AddEntryView> {
       return;
     }
 
+    if (_image != null) {
+      try {
+        imagePath = await widget.diaryController.uploadImageToFirebase(_image);
+      } catch (e) {
+        throw Exception(e);
+      }
+    }
+
     final DiaryEntry newEntry = DiaryEntry(
       date: _selectedDate,
       description: description,
       rating: _rating,
+      imagePath: imagePath,
     );
 
     widget.diaryController.addEntry(newEntry).then((_) {
@@ -113,6 +123,20 @@ class _AddEntryViewState extends State<AddEntryView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.browser_updated),
+            onPressed: () {
+              _pickImageFromGallery();
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.add_a_photo),
+            onPressed: () {
+              _pickImageFromCamera();
+            },
+          )
+        ],
         title: widget.entry == null
             ? Text('Add Diary Entry')
             : Text('Edit Diary Entry'),
@@ -164,40 +188,56 @@ class _AddEntryViewState extends State<AddEntryView> {
             ),
             Column(
               children: [
-                ElevatedButton(
-                  onPressed: _pickImageFromGallery,
-                  child: Text('Pick Image from Gallery'),
-                ),
-                ElevatedButton(
-                  onPressed: _pickImageFromCamera,
-                  child: Text('Capture Image from Camera'),
-                ),
-                SizedBox(height: 10,),
-                Column(
+                SizedBox(height: 15,),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    _image != null
-                        ? Text(
-                            "Current Image",
-                            style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold),
-                          )
-                        : Container(),
-                    _image != null
-                        ? kIsWeb
-                            ? Image.network(
-                                _image!.path,
-                                width: 300,
-                                height: 300,
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        widget.entry?.imagePath != null
+                            ? Text(
+                                "Current Image",
+                                style: TextStyle(
+                                    fontSize: 12, fontWeight: FontWeight.bold),
                               )
-                            : Image.file(
-                                width: 200,
-                                height: 200,
-                                File(_image!.path),
+                            : Container(),
+                        widget.entry?.imagePath != null
+                            ? Image(
+                                height: 175,
+                                width: 175,
+                                image: NetworkImage(
+                                    widget.entry?.imagePath as String))
+                            : Container(),
+                      ],
+                    ),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _image != null
+                            ? Text(
+                                "New Image",
+                                style: TextStyle(
+                                    fontSize: 12, fontWeight: FontWeight.bold),
                               )
-                        : Container(),
+                            : Container(),
+                        _image != null
+                            ? kIsWeb
+                                ? Image.network(
+                                    _image!.path,
+                                    width: 175,
+                                    height: 175,
+                                  )
+                                : Image.file(
+                                    width: 175,
+                                    height: 175,
+                                    File(_image!.path),
+                                  )
+                            : Container(),
+                      ],
+                    ),
                   ],
-                ),
+                )
               ],
             ),
             const SizedBox(height: 20),

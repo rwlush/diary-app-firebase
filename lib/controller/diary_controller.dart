@@ -53,6 +53,9 @@ class DiaryController {
       if (!await entryExists(entry.date)) {
         throw Exception('No entry found for this date');
       }
+      if (entry.imagePath != null) {
+        await removeImageFromFirebase(entry.imagePath as String);
+      }
       return await diaryEntryCollection.doc(entry.id).delete();
     } catch (e) {
       throw Exception(e);
@@ -123,8 +126,9 @@ class DiaryController {
       print("Image deletion failed: $e");
       return false;
     }
-    final snapshot =
-        await diaryEntryCollection.where('imagePath', isEqualTo: imageUrl).get();
+    final snapshot = await diaryEntryCollection
+        .where('imagePath', isEqualTo: imageUrl)
+        .get();
     if (snapshot.docs.isNotEmpty) {
       try {
         final ref = snapshot.docs.first.reference;
